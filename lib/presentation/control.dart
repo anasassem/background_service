@@ -37,8 +37,8 @@ class Controller extends GetxController {
           if (list.containsKey(element["id"]) == false) {
             list[element["id"]] = {
               "name": element["name"],
-              "lat": "28.5024428",
-              "lng": "30.8059445"
+              "lat": element["lat"],
+              "lng": element["lng"],
             };
             var sharedPreferences = await SharedPreferences.getInstance();
             await sharedPreferences.setString(
