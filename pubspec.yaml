@@ -41,13 +41,11 @@ dependencies:
   flutter_local_notifications: ^15.1.0+1
   device_info_plus: ^9.0.2
   geolocator: ^9.0.2
-  flutter_bloc: ^8.1.3
   sqflite_common_ffi: ^2.2.2
   sqlite3_flutter_libs: ^0.5.15
   url_launcher:
   sqflite:
   sqflite_common:
-  bloc:
   http:
   get:
 dev_dependencies:

@@ -1,31 +1,23 @@
 
 import 'package:background/presentation/control.dart';
-import 'package:background/shared/network/cache_helper.dart';
 import 'package:background/shared/network/local_db.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
-import 'package:http/http.dart' as http;
 import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import 'const.dart';
 import 'counter_page.dart';
-import 'presentation/home screen/cubit/home_cubit.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await CacheHelper.init();
   await SqlDb().initialDb();
   await initializeService();
   await Geolocator.requestPermission();
-  Bloc.observer = MyBlocObserver();
   const AndroidInitializationSettings initializationSettingsAndroid =
   AndroidInitializationSettings('app_icon');
   const InitializationSettings initializationSettings = InitializationSettings(
@@ -172,7 +164,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
+    return const GetMaterialApp(
       debugShowCheckedModeBanner: false,
         home: CounterPage());
   }
