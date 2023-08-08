@@ -9,6 +9,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:math';
+
+import 'package:sound_mode/sound_mode.dart';
+import 'package:sound_mode/utils/ringer_mode_statuses.dart';
 class Controller extends GetxController {
   @override
   void onInit() {
@@ -101,7 +104,6 @@ class Controller extends GetxController {
         final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
         FlutterLocalNotificationsPlugin();
         list.forEach((key, value) async {
-          print('object1');
           var mis = Geolocator.distanceBetween(
               double.parse(value["lat"]), double.parse(value["lng"]),
               position.latitude, position.longitude);
@@ -113,9 +115,8 @@ class Controller extends GetxController {
                   element2) async {
                 if (element2.toString() == key) {
                   if (element["showed"] == 0) {
-                    print('object');
-
-                    // send
+                    if(key == "1" ||key == "2")
+                      await SoundMode.setSoundMode(RingerModeStatus.silent);
                     if (element["image_full_link"] != "null") {
                       final http.Response response = await http.get(Uri.parse(
                           element["image_full_link"]));

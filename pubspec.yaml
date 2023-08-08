@@ -48,6 +48,7 @@ dependencies:
   sqflite_common:
   http:
   get:
+  sound_mode:
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,4 +1,3 @@
-
 import 'package:background/presentation/control.dart';
 import 'package:background/shared/network/local_db.dart';
 import 'package:flutter/material.dart';
@@ -15,37 +14,46 @@ import 'counter_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  _isAndroidPermissionGranted();
+  _requestPermissions();
   await SqlDb().initialDb();
   await initializeService();
   await Geolocator.requestPermission();
   const AndroidInitializationSettings initializationSettingsAndroid =
-  AndroidInitializationSettings('app_icon');
+      AndroidInitializationSettings('app_icon');
+  const iosInitializationSetting = DarwinInitializationSettings();
   const InitializationSettings initializationSettings = InitializationSettings(
     android: initializationSettingsAndroid,
+      iOS: iosInitializationSetting
   );
   await flutterLocalNotificationsPlugin.initialize(
     initializationSettings,
     onDidReceiveNotificationResponse:
-        (NotificationResponse notificationResponse) async{
-      if(notificationResponse.payload!="test") {
-        await launchUrl(Uri.parse(notificationResponse.payload!),mode: LaunchMode.externalApplication);
+        (NotificationResponse notificationResponse) async {
+      if (notificationResponse.payload != "test") {
+        await launchUrl(Uri.parse(notificationResponse.payload!),
+            mode: LaunchMode.externalApplication);
       }
     },
     onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
   );
   runApp(const MyApp());
 }
+
 @pragma('vm:entry-point')
-void notificationTapBackground(NotificationResponse notificationResponse) async{
+void notificationTapBackground(
+    NotificationResponse notificationResponse) async {
   // ignore: avoid_print
-  if(notificationResponse.payload!="test") {
-    await launchUrl(Uri.parse(notificationResponse.payload!),mode: LaunchMode.externalApplication);
+  if (notificationResponse.payload != "test") {
+    await launchUrl(Uri.parse(notificationResponse.payload!),
+        mode: LaunchMode.externalApplication);
   }
 }
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-FlutterLocalNotificationsPlugin();
-Future<void> initializeService() async {
 
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+Future<void> initializeService() async {
   final service = FlutterBackgroundService();
 
   /// OPTIONAL, using custom notification channel id
@@ -77,7 +85,7 @@ Future<void> initializeService() async {
       ?.createNotificationChannel(channel);
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
-      AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel2);
 
   await service.configure(
@@ -105,6 +113,7 @@ Future<void> initializeService() async {
 
   service.startService();
 }
+
 // to ensure this is executed
 // run app from xcode, then from xcode menu, select Simulate Background Fetch
 @pragma('vm:entry-point')
@@ -120,6 +129,7 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 
   return true;
 }
+
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
   final controller = Get.put(Controller());
@@ -154,6 +164,40 @@ void onStart(ServiceInstance service) async {
   });
 }
 
+@override
+void initState() {
+  _isAndroidPermissionGranted();
+  _requestPermissions();
+}
+
+Future<void> _isAndroidPermissionGranted() async {
+  if (Platform.isAndroid) {
+    await flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>()
+            ?.areNotificationsEnabled() ??
+        false;
+  }
+}
+
+Future<void> _requestPermissions() async {
+  if (Platform.isIOS) {
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+  } else if (Platform.isAndroid) {
+    final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+        flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    await androidImplementation?.requestPermission();
+  }
+}
+
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -165,7 +209,6 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return const GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-        home: CounterPage());
+        debugShowCheckedModeBanner: false, home: CounterPage());
   }
 }
