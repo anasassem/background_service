@@ -8,9 +8,8 @@ import 'dart:ui';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'counter_page.dart';
+import 'home_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,11 +18,17 @@ Future<void> main() async {
   await SqlDb().initialDb();
   await initializeService();
   await Geolocator.requestPermission();
+  await initializeNotification();
+  runApp(const MyApp());
+}
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+FlutterLocalNotificationsPlugin();
+initializeNotification()async{
   const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('app_icon');
+  AndroidInitializationSettings('app_icon');
   const iosInitializationSetting = DarwinInitializationSettings();
   const InitializationSettings initializationSettings = InitializationSettings(
-    android: initializationSettingsAndroid,
+      android: initializationSettingsAndroid,
       iOS: iosInitializationSetting
   );
   await flutterLocalNotificationsPlugin.initialize(
@@ -37,25 +42,16 @@ Future<void> main() async {
     },
     onDidReceiveBackgroundNotificationResponse: notificationTapBackground,
   );
-  runApp(const MyApp());
 }
-
 @pragma('vm:entry-point')
-void notificationTapBackground(
-    NotificationResponse notificationResponse) async {
-  // ignore: avoid_print
+void notificationTapBackground(NotificationResponse notificationResponse) async {
   if (notificationResponse.payload != "test") {
     await launchUrl(Uri.parse(notificationResponse.payload!),
         mode: LaunchMode.externalApplication);
   }
 }
-
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
-
   /// OPTIONAL, using custom notification channel id
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
     'my_foreground', // id
@@ -113,39 +109,23 @@ Future<void> initializeService() async {
 
   service.startService();
 }
-
 // to ensure this is executed
 // run app from xcode, then from xcode menu, select Simulate Background Fetch
 @pragma('vm:entry-point')
 Future<bool> onIosBackground(ServiceInstance service) async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
-
-  SharedPreferences preferences = await SharedPreferences.getInstance();
-  await preferences.reload();
-  final log = preferences.getStringList('log') ?? <String>[];
-  log.add(DateTime.now().toIso8601String());
-  await preferences.setStringList('log', log);
-
-  return true;
-}
-
-@pragma('vm:entry-point')
-void onStart(ServiceInstance service) async {
-  final controller = Get.put(Controller());
-
-  // Only available for flutter 3.0.0 and later
   DartPluginRegistrant.ensureInitialized();
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
-  Timer.periodic(const Duration(seconds: 5), (timer) async {
+  final controller = Get.put(Controller());
+  Timer.periodic(const Duration(minutes: 1), (timer) async {
+    Position p =await Geolocator.getCurrentPosition();
     try {
       await controller.getLocations();
       await controller.getNotification();
       await flutterLocalNotificationsPlugin.show(
         888,
         'Location',
-        '',
+        "${p.latitude} - ${p.longitude}",
         const NotificationDetails(
           android: AndroidNotificationDetails(
             'my_foreground',
@@ -157,18 +137,45 @@ void onStart(ServiceInstance service) async {
           ),
         ),
       );
-      await controller.sm();
+      await controller.functions();
+    } catch (e) {
+      print(e);
+    }
+  });
+  return true;
+}
+
+@pragma('vm:entry-point')
+void onStart(ServiceInstance service) async {
+  DartPluginRegistrant.ensureInitialized();
+  final controller = Get.put(Controller());
+  Timer.periodic(const Duration(minutes: 1), (timer) async {
+    Position p =await Geolocator.getCurrentPosition();
+    try {
+      await controller.getLocations();
+      await controller.getNotification();
+      await flutterLocalNotificationsPlugin.show(
+        888,
+        'Location',
+        "${p.latitude} - ${p.longitude}",
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'my_foreground',
+            'MY FOREGROUND SERVICE',
+            icon: 'ic_bg_service_small',
+            priority: Priority.min,
+            importance: Importance.min,
+            ongoing: true,
+          ),
+        ),
+      );
+      await controller.functions();
     } catch (e) {
       print(e);
     }
   });
 }
 
-@override
-void initState() {
-  _isAndroidPermissionGranted();
-  _requestPermissions();
-}
 
 Future<void> _isAndroidPermissionGranted() async {
   if (Platform.isAndroid) {
@@ -209,6 +216,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return const GetMaterialApp(
-        debugShowCheckedModeBanner: false, home: CounterPage());
+        debugShowCheckedModeBanner: false,
+        home: HomeScreen());
   }
 }

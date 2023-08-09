@@ -1,8 +1,5 @@
 import 'dart:convert';
-
-
 import 'package:get/get.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:background/shared/network/local_db.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -10,20 +7,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:math';
 
-import 'package:sound_mode/sound_mode.dart';
-import 'package:sound_mode/utils/ringer_mode_statuses.dart';
 class Controller extends GetxController {
-  @override
-  void onInit() {
-    // TODO: implement onInit
-    super.onInit();
-  }
   List re = [].obs ;
-  var count = 0;
-  void increment() {
-    count++;
-    update();
-  }
+  static Map list = {};
+
   getNotification2()async{
     re = await SqlDb().readData("SELECT * FROM 'notifications2'");
     update();
@@ -89,14 +76,9 @@ class Controller extends GetxController {
     }
 
   }
-  static Map list = {};
-  getList() async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    await preferences.reload();
-    var list = await jsonDecode(preferences.getString("locations") ?? "{}");
-    return list;
-  }
-  sm() async{
+
+
+  functions() async{
     Position position;
     try{
       if (await Geolocator.isLocationServiceEnabled()) {
@@ -115,8 +97,6 @@ class Controller extends GetxController {
                   element2) async {
                 if (element2.toString() == key) {
                   if (element["showed"] == 0) {
-                    if(key == "1" ||key == "2")
-                      await SoundMode.setSoundMode(RingerModeStatus.silent);
                     if (element["image_full_link"] != "null") {
                       final http.Response response = await http.get(Uri.parse(
                           element["image_full_link"]));
@@ -197,5 +177,4 @@ class Controller extends GetxController {
 
 
   }
-
 }

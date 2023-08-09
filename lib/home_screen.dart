@@ -2,12 +2,12 @@ import 'package:background/presentation/control.dart';
 import 'package:background/shared/network/local_db.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-class CounterPage extends StatefulWidget {
-  const CounterPage({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
   @override
-  State<CounterPage> createState() => _CounterPageState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
-class _CounterPageState extends State<CounterPage> {
+class _HomeScreenState extends State<HomeScreen> {
   final controller = Get.put(Controller());
   @override
   void initState() {
