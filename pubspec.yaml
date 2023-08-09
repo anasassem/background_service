@@ -42,9 +42,13 @@ dependencies:
   device_info_plus: ^9.0.2
   geolocator: ^9.0.2
   sqflite_common_ffi: ^2.2.2
-  url_launcher: ^6.1.11
-  http: ^0.13.6
-  get: 4.6.5
+  sqlite3_flutter_libs: ^0.5.15
+  url_launcher:
+  sqflite:
+  sqflite_common:
+  http:
+  get:
+  sound_mode:
 dev_dependencies:
   flutter_test:
     sdk: flutter

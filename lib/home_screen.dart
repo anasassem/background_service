@@ -22,7 +22,6 @@ class _HomeScreenState extends State<HomeScreen> {
       body: GetBuilder<Controller>(
         builder: (_) => Column(
           children: [
-            Text(controller.re.length.toString()),
             Expanded(
               child:ListView.builder(
                 itemBuilder: (d,f){

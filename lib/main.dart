@@ -118,14 +118,13 @@ Future<bool> onIosBackground(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
   final controller = Get.put(Controller());
   Timer.periodic(const Duration(minutes: 1), (timer) async {
-    Position p =await Geolocator.getCurrentPosition();
     try {
       await controller.getLocations();
       await controller.getNotification();
       await flutterLocalNotificationsPlugin.show(
         888,
         'Location',
-        "${p.latitude} - ${p.longitude}",
+        "",
         const NotificationDetails(
           android: AndroidNotificationDetails(
             'my_foreground',
@@ -150,14 +149,13 @@ void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
   final controller = Get.put(Controller());
   Timer.periodic(const Duration(minutes: 1), (timer) async {
-    Position p =await Geolocator.getCurrentPosition();
     try {
       await controller.getLocations();
       await controller.getNotification();
       await flutterLocalNotificationsPlugin.show(
         888,
         'Location',
-        "${p.latitude} - ${p.longitude}",
+        "",
         const NotificationDetails(
           android: AndroidNotificationDetails(
             'my_foreground',
